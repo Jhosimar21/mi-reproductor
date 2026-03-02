@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Mi Biblioteca (Video + Audio)</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    body{font-family:Arial;padding:16px}
+    input,select{width:min(900px,95%);padding:10px;margin:6px 0}
+    button{padding:10px 14px;margin:6px 6px 6px 0;cursor:pointer}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .box{border:1px solid #ddd;border-radius:10px;padding:12px;margin:10px 0;max-width:920px}
+  </style>
+</head>
+<body>
+
+<h2>Biblioteca: Video (EN) + Audio (ES)</h2>
+
+<div class="box">
+  <input id="title" placeholder="Nombre (ej: Película 1)" />
+  <input id="videoLink" placeholder="Link VIDEO (.m3u8)" />
+  <input id="audioLink" placeholder="Link AUDIO Español (.m3u8 o mp3/aac)" />
+
+  <div class="row">
+    <button id="btnSave">💾 Guardar</button>
+    <button id="btnLoad">🎬 Cargar</button>
+    <button id="btnPlayEs">▶ Español</button>
+    <button id="btnPlayEn">▶ Inglés</button>
+    <button id="btnDelete">🗑 Eliminar</button>
+  </div>
+
+  <select id="library"></select>
+</div>
+
+<video id="video" controls width="860"></video>
+
+<script src="./app.js"></script>
+</body>
+</html>
