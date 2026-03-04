@@ -1,10 +1,7 @@
 /* =========================================================
-   [APP.JS] Mi Netflix Personal
-   - Módulo 1: Referencias DOM
-   - Módulo 2: Storage (localStorage)
-   - Módulo 3: Render (select + grid)
-   - Módulo 4: Player (HLS) + Audio ES sincronizado
-   - Módulo 5: Eventos UI
+   [APP.JS] Mi Netflix Personal (PÚBLICO)
+   - Fuente de datos: videos.json (todos ven lo mismo)
+   - Admin real (agregar/borrar) = editar videos.json + git push
    ========================================================= */
 
 /* =========================
@@ -39,32 +36,39 @@ const btnModalEn = document.getElementById('btnModalEn');
 const btnModalEs = document.getElementById('btnModalEs');
 
 /* =========================
-   [2] STORAGE
+   [2] DATA SOURCE (PUBLIC)
    ========================= */
-const KEY = "mi_biblioteca_links_v1";
-
-function getLib(){ return JSON.parse(localStorage.getItem(KEY) || "[]"); }
-function setLib(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
-
-/* =========================
-   [3] RENDER
-   ========================= */
+let LIB = [];          // aquí vive la lista cargada desde videos.json
 let selectedIndex = null;
 
+async function loadLibraryFromJson(){
+  try{
+    const res = await fetch('./videos.json', { cache: "no-store" });
+    if(!res.ok) throw new Error("No se pudo leer videos.json");
+    const data = await res.json();
+    LIB = Array.isArray(data) ? data : [];
+  }catch(e){
+    console.error(e);
+    LIB = [];
+  }
+}
+
+/* =========================
+   [3] RENDER: SELECT + GRID
+   ========================= */
 function refreshSelect(){
-  const lib = getLib();
   libraryEl.innerHTML = "";
 
-  if (lib.length === 0) {
+  if (LIB.length === 0) {
     const opt = document.createElement("option");
-    opt.textContent = "— Sin videos guardados —";
+    opt.textContent = "— Sin videos —";
     opt.value = "";
     libraryEl.appendChild(opt);
     selectedIndex = null;
     return;
   }
 
-  lib.forEach((it, idx) => {
+  LIB.forEach((it, idx) => {
     const opt = document.createElement("option");
     opt.value = idx;
     opt.textContent = it.title || `Item ${idx+1}`;
@@ -76,21 +80,19 @@ function refreshSelect(){
 }
 
 function fillInputsFromSelected(){
-  const lib = getLib();
   const idx = libraryEl.value;
-  if (idx === "" || !lib[idx]) return;
+  if (idx === "" || !LIB[idx]) return;
 
   selectedIndex = Number(idx);
-  titleEl.value = lib[idx].title || "";
-  videoLinkEl.value = lib[idx].video || "";
-  audioLinkEl.value = lib[idx].audio || "";
+  titleEl.value = LIB[idx].title || "";
+  videoLinkEl.value = LIB[idx].video || "";
+  audioLinkEl.value = LIB[idx].audio || "";
 }
 
 function renderGrid(){
-  const lib = getLib();
   const q = (search.value || "").trim().toLowerCase();
 
-  const filtered = lib
+  const filtered = LIB
     .map((it, idx) => ({...it, idx}))
     .filter(it => (it.title || "").toLowerCase().includes(q));
 
@@ -107,9 +109,15 @@ function renderGrid(){
     card.className = "card";
     card.dataset.idx = item.idx;
 
-    // Miniatura simple (luego le ponemos imagen real)
+    // Miniatura: si hay poster úsalo, si no, degradado
     const thumb = document.createElement("div");
     thumb.className = "thumb";
+    if (item.poster) {
+      thumb.style.backgroundImage = `url('${item.poster}')`;
+      thumb.style.backgroundSize = "cover";
+      thumb.style.backgroundPosition = "center";
+      thumb.style.height = "160px";
+    }
 
     const body = document.createElement("div");
     body.className = "card-body";
@@ -142,7 +150,7 @@ function renderGrid(){
       selectedIndex = item.idx;
       refreshSelect();
       fillInputsFromSelected();
-      openModalAndPlayEnglish(); // por defecto abre en inglés
+      openModalAndPlayEnglish();
     });
 
     grid.appendChild(card);
@@ -193,12 +201,10 @@ function attachAudioEs(){
     audioEs.src = asrc;
   }
 
-  // Controlado por el video
   video.addEventListener('play', () => audioEs && audioEs.play().catch(()=>{}));
   video.addEventListener('pause', () => audioEs && audioEs.pause());
   video.addEventListener('seeking', () => { if(audioEs) audioEs.currentTime = video.currentTime; });
 
-  // Re-sync suave
   syncTimer = setInterval(() => {
     if (!audioEs || video.paused) return;
     const drift = Math.abs((audioEs.currentTime||0) - (video.currentTime||0));
@@ -237,13 +243,9 @@ function openModal(){
   modalTitle.textContent = titleEl.value || "Reproduciendo...";
   modalSub.textContent = "Audio: Inglés (original)";
 }
-
 function closeModal(){
   modal.classList.add("hidden");
-  // opcional: pausar
-  // video.pause();
 }
-
 function openModalAndPlayEnglish(){
   openModal();
   loadVideo();
@@ -266,50 +268,19 @@ btnLoad.onclick = () => { loadVideo(); openModal(); };
 btnPlayEs.onclick = () => { openModal(); playSpanish(); };
 btnPlayEn.onclick = () => { openModal(); playEnglish(); };
 
-btnSave.onclick = () => {
-  const title = titleEl.value.trim() || "Sin nombre";
-  const v = videoLinkEl.value.trim();
-  const a = audioLinkEl.value.trim();
-
-  if (!v) return alert("Falta link del VIDEO.");
-
-  const lib = getLib();
-  lib.push({ title, video: v, audio: a });
-  setLib(lib);
-
-  selectedIndex = lib.length - 1;
-  refreshSelect();
-  fillInputsFromSelected();
-  renderGrid();
-  alert("Guardado ✅");
-};
-
-btnDelete.onclick = () => {
-  const lib = getLib();
-  const idx = libraryEl.value;
-  if (idx === "" || !lib[idx]) return;
-
-  lib.splice(Number(idx), 1);
-  setLib(lib);
-
-  titleEl.value = ""; videoLinkEl.value = ""; audioLinkEl.value = "";
-  selectedIndex = lib.length ? 0 : null;
-
-  refreshSelect();
-  fillInputsFromSelected();
-  renderGrid();
-};
-
-libraryEl.onchange = () => {
-  fillInputsFromSelected();
-  renderGrid();
-};
-
-search.addEventListener("input", renderGrid);
+/* ===== ADMIN (sin backend) =====
+   En GitHub Pages no se puede escribir videos.json desde el navegador.
+   Por eso: tú editas videos.json manualmente y haces git push.
+*/
+btnSave.onclick = () => alert("Para agregar videos: edita videos.json y haz git push (GitHub Pages es estático).");
+btnDelete.onclick = () => alert("Para eliminar videos: borra el item en videos.json y haz git push.");
 
 /* =========================
    [INIT]
    ========================= */
-refreshSelect();
-fillInputsFromSelected();
-renderGrid();
+(async function init(){
+  await loadLibraryFromJson();
+  refreshSelect();
+  fillInputsFromSelected();
+  renderGrid();
+})();

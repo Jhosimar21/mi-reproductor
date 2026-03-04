@@ -1,177 +1,187 @@
 /* =========================
-   [THEME] Netflix-like
-   ========================= */
-:root{
-  --bg:#0b0b0f;
-  --panel:#12121a;
-  --card:#181824;
-  --muted:#a5a5b5;
-  --text:#f2f2f7;
-  --accent:#e50914;
-  --line:#2a2a38;
-  --shadow: 0 18px 50px rgba(0,0,0,.45);
-  --radius:16px;
-}
+   ESTILO GENERAL
+========================= */
 
-*{box-sizing:border-box}
 body{
   margin:0;
-  font-family: Arial, sans-serif;
-  background:var(--bg);
-  color:var(--text);
+  font-family:Arial;
+  background:#141414;
+  color:white;
 }
 
 /* =========================
-   [HEADER]
-   ========================= */
+   HEADER
+========================= */
+
 .topbar{
-  position:sticky; top:0;
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px;
-  padding:14px 18px;
-  background:rgba(11,11,15,.88);
-  backdrop-filter: blur(10px);
-  border-bottom:1px solid var(--line);
-  z-index:10;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:16px 24px;
+  background:black;
 }
-.brand{display:flex; align-items:center; gap:10px}
-.brand h1{font-size:16px; margin:0; letter-spacing:.2px}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.brand h1{
+  font-size:20px;
+}
+
 .dot{
-  width:10px; height:10px; border-radius:50%;
-  background:var(--accent);
-  box-shadow:0 0 0 4px rgba(229,9,20,.15);
+  width:10px;
+  height:10px;
+  background:red;
+  border-radius:50%;
 }
 
-.topbar-actions{display:flex; align-items:center; gap:10px}
+.topbar-actions{
+  display:flex;
+  gap:10px;
+}
+
 .search{
-  width:min(340px, 56vw);
-  padding:10px 12px;
-  border-radius:999px;
-  border:1px solid var(--line);
-  background:#0f0f17;
-  color:var(--text);
-  outline:none;
+  padding:8px;
+  border-radius:4px;
+  border:none;
 }
 
 /* =========================
-   [LAYOUT]
-   ========================= */
-.layout{
-  max-width:1200px;
-  margin:0 auto;
-  padding:18px;
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:16px;
-}
+   BOTONES
+========================= */
 
-.section-title{margin:8px 0 12px 0; font-size:18px}
-
-/* =========================
-   [ADMIN PANEL]
-   ========================= */
-.panel{
-  border:1px solid var(--line);
-  background:var(--panel);
-  border-radius:var(--radius);
-  box-shadow: var(--shadow);
-  padding:14px;
-}
-.panel-head{display:flex; align-items:center; justify-content:space-between}
-.panel-head h2{margin:0; font-size:16px}
-
-.form{display:grid; gap:10px; margin-top:10px}
-label{display:grid; gap:6px; color:var(--muted); font-size:12px}
-input, select{
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#0f0f17;
-  color:var(--text);
-  outline:none;
-}
-.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-.hint{color:var(--muted); font-size:12px}
-
-/* =========================
-   [BUTTONS]
-   ========================= */
 .btn{
-  padding:10px 12px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background: #161622;
-  color:var(--text);
+  padding:8px 14px;
+  border:none;
+  border-radius:6px;
   cursor:pointer;
 }
-.btn:hover{filter:brightness(1.08)}
-.btn.primary{background:var(--accent); border-color:transparent}
-.btn.danger{background:#b00020; border-color:transparent}
-.btn.ghost{background:transparent}
+
+.btn.primary{
+  background:#e50914;
+  color:white;
+}
+
+.btn.danger{
+  background:#b20710;
+  color:white;
+}
+
+.btn.ghost{
+  background:transparent;
+  color:white;
+  border:1px solid #555;
+}
 
 /* =========================
-   [GALLERY GRID]
-   ========================= */
-.gallery{padding:6px 0}
+   ADMIN PANEL
+========================= */
+
+.panel{
+  background:#1e1e1e;
+  padding:20px;
+  border-radius:8px;
+  margin-bottom:20px;
+}
+
+.hidden{
+  display:none;
+}
+
+.form{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.hint{
+  font-size:12px;
+  opacity:0.7;
+}
+
+/* =========================
+   GALERIA NETFLIX
+========================= */
+
+.gallery{
+  padding:20px;
+}
+
+.section-title{
+  margin-bottom:10px;
+}
+
 .grid{
   display:grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap:12px;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:20px;
 }
+
 .card{
-  border:1px solid var(--line);
-  background:var(--card);
-  border-radius:14px;
-  overflow:hidden;
   cursor:pointer;
-  transition: transform .12s ease, filter .12s ease;
+  transition:0.3s;
 }
-.card:hover{transform: translateY(-2px); filter:brightness(1.06)}
-.thumb{
-  height:110px;
-  background: linear-gradient(135deg, rgba(229,9,20,.28), rgba(255,255,255,.05));
+
+.card:hover{
+  transform:scale(1.05);
 }
-.card-body{padding:10px}
-.card-title{margin:0; font-size:13px; line-height:1.2}
-.badges{display:flex; gap:6px; margin-top:8px; flex-wrap:wrap}
-.badge{
-  font-size:11px;
-  color:var(--muted);
-  border:1px solid var(--line);
-  padding:3px 8px;
-  border-radius:999px;
+
+.card img{
+  width:100%;
+  border-radius:6px;
 }
-.empty{color:var(--muted)}
+
+.card p{
+  margin-top:6px;
+  font-size:14px;
+}
 
 /* =========================
-   [MODAL PLAYER]
-   ========================= */
+   MODAL PLAYER
+========================= */
+
 .modal{
-  position:fixed; inset:0;
-  background:rgba(0,0,0,.65);
-  display:flex; align-items:center; justify-content:center;
-  padding:18px;
-  z-index:20;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:rgba(0,0,0,0.8);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
+
 .modal-card{
-  width:min(980px, 100%);
-  border:1px solid var(--line);
-  background:var(--panel);
-  border-radius:var(--radius);
-  box-shadow: var(--shadow);
-  overflow:hidden;
+  background:#111;
+  padding:20px;
+  border-radius:10px;
+  width:90%;
+  max-width:900px;
 }
+
 .modal-head{
-  display:flex; justify-content:space-between; align-items:center;
-  padding:12px 14px;
-  border-bottom:1px solid var(--line);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
 }
-.modal-head h3{margin:0; font-size:16px}
-.sub{margin:4px 0 0 0; color:var(--muted); font-size:12px}
 
-.player{width:100%; height:auto; background:#000}
+.player{
+  width:100%;
+}
+
 .modal-actions{
-  display:flex; gap:10px; padding:12px 14px; border-top:1px solid var(--line);
+  margin-top:10px;
+  display:flex;
+  gap:10px;
 }
-
-.hidden{display:none}

@@ -1,25 +1,33 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <!-- =========================
        [HEAD] Configuración base
-       ========================= -->
+  ========================== -->
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <title>Mi Netflix Personal</title>
 
-  <!-- [LIB] HLS para reproducir .m3u8 -->
+  <!-- =========================
+       [LIBRERÍA] HLS para videos .m3u8
+  ========================== -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 
-  <!-- [CSS] Estilos separados -->
+  <!-- =========================
+       [CSS] Estilos externos
+  ========================== -->
   <link rel="stylesheet" href="./styles.css" />
 </head>
 
 <body>
+
   <!-- =========================
        [HEADER] Barra superior
-       ========================= -->
+  ========================== -->
   <header class="topbar">
+
     <div class="brand">
       <span class="dot"></span>
       <h1>Mi Netflix Personal</h1>
@@ -29,87 +37,121 @@
       <input id="search" class="search" placeholder="Buscar..." />
       <button id="btnOpenAdmin" class="btn ghost">Administrar</button>
     </div>
+
   </header>
 
   <!-- =========================
-       [MAIN] Contenido principal
-       ========================= -->
+       [CONTENIDO PRINCIPAL]
+  ========================== -->
   <main class="layout">
 
-    <!-- ===== [ADMIN PANEL] (tú como dueño) ===== -->
+    <!-- =========================
+         [ADMIN PANEL]
+         Solo tú lo usarás para subir videos
+    ========================== -->
     <section id="adminPanel" class="panel hidden">
+
       <div class="panel-head">
-        <h2>Agregar / Guardar video</h2>
+        <h2>Administrar videos</h2>
         <button id="btnCloseAdmin" class="btn ghost">Cerrar</button>
       </div>
 
       <div class="form">
+
+        <!-- Titulo -->
         <label>
           Título
           <input id="title" placeholder="Ej: Curso Spring Boot - Clase 1" />
         </label>
 
+        <!-- Link del video -->
         <label>
           Link VIDEO (m3u8 o mp4)
           <input id="videoLink" placeholder="https://.../video.m3u8" />
         </label>
 
+        <!-- Link audio español -->
         <label>
           Link AUDIO Español (opcional)
-          <input id="audioLink" placeholder="https://.../audio.m3u8 o .mp3/.aac" />
+          <input id="audioLink" placeholder="https://.../audio.m3u8 o .mp3" />
         </label>
 
+        <!-- Botones -->
         <div class="row">
           <button id="btnSave" class="btn primary">Guardar</button>
           <button id="btnDelete" class="btn danger">Eliminar seleccionado</button>
-          <span id="hint" class="hint">Tip: guarda miniaturas después (lo agregamos luego).</span>
+          <span class="hint">Tip: luego agregaremos miniaturas.</span>
         </div>
 
+        <!-- Biblioteca -->
         <label>
           Mis videos guardados
           <select id="library"></select>
         </label>
 
+        <!-- Controles -->
         <div class="row">
           <button id="btnLoad" class="btn">Cargar</button>
           <button id="btnPlayEs" class="btn">▶ Español</button>
           <button id="btnPlayEn" class="btn">▶ Inglés</button>
         </div>
+
       </div>
     </section>
 
-    <!-- ===== [GALLERY] Estilo Netflix ===== -->
+    <!-- =========================
+         [GALERÍA NETFLIX]
+         Aquí aparecerán los videos
+    ========================== -->
     <section class="gallery">
-      <h2 class="section-title">Mi galería</h2>
+
+      <h2 class="section-title">Mi Galería</h2>
+
       <div id="grid" class="grid"></div>
-      <p id="empty" class="empty hidden">Aún no tienes videos guardados. Entra a “Administrar” y agrega el primero.</p>
+
+      <p id="empty" class="empty hidden">
+        Aún no tienes videos guardados. Entra a "Administrar" y agrega el primero.
+      </p>
+
     </section>
 
   </main>
 
   <!-- =========================
-       [MODAL PLAYER] Reproductor grande
-       ========================= -->
+       [MODAL PLAYER]
+       Reproductor grande
+  ========================== -->
   <div id="modal" class="modal hidden">
+
     <div class="modal-card">
+
       <div class="modal-head">
         <div>
           <h3 id="modalTitle">Reproduciendo...</h3>
-          <p id="modalSub" class="sub">Inglés / Español</p>
+          <p id="modalSub" class="sub">Idioma</p>
         </div>
+
         <button id="btnCloseModal" class="btn ghost">✕</button>
       </div>
 
+      <!-- Video -->
       <video id="video" class="player" controls></video>
 
+      <!-- Controles idioma -->
       <div class="modal-actions">
         <button id="btnModalEn" class="btn">Inglés</button>
         <button id="btnModalEs" class="btn">Español</button>
       </div>
+
     </div>
+
   </div>
 
-  <!-- [JS] Lógica separada -->
+  <!-- =========================
+       [JAVASCRIPT]
+       Lógica del sistema
+  ========================== -->
   <script src="./app.js"></script>
+
 </body>
 </html>
