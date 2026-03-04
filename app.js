@@ -1,77 +1,83 @@
 /* =========================================================
    [APP.JS] Mi Netflix Personal (PÚBLICO)
-   - Fuente de datos: videos.json (todos ven lo mismo)
-   - Admin real (agregar/borrar) = editar videos.json + git push
+   - Fuente: videos.json (todos ven lo mismo)
+   - Admin real: editar videos.json + git push
+   - Fix: cerrar modal detiene video/audio
+   - Fix: evita listeners duplicados
    ========================================================= */
 
-/* =========================
-   [1] DOM REFERENCES
-   ========================= */
-const video = document.getElementById('video');
-
-const titleEl = document.getElementById('title');
-const videoLinkEl = document.getElementById('videoLink');
-const audioLinkEl = document.getElementById('audioLink');
-const libraryEl = document.getElementById('library');
-
-const btnSave = document.getElementById('btnSave');
-const btnLoad = document.getElementById('btnLoad');
-const btnPlayEs = document.getElementById('btnPlayEs');
-const btnPlayEn = document.getElementById('btnPlayEn');
-const btnDelete = document.getElementById('btnDelete');
-
-const adminPanel = document.getElementById('adminPanel');
-const btnOpenAdmin = document.getElementById('btnOpenAdmin');
-const btnCloseAdmin = document.getElementById('btnCloseAdmin');
-
-const grid = document.getElementById('grid');
-const empty = document.getElementById('empty');
-const search = document.getElementById('search');
-
-const modal = document.getElementById('modal');
-const modalTitle = document.getElementById('modalTitle');
-const modalSub = document.getElementById('modalSub');
-const btnCloseModal = document.getElementById('btnCloseModal');
-const btnModalEn = document.getElementById('btnModalEn');
-const btnModalEs = document.getElementById('btnModalEs');
+'use strict';
 
 /* =========================
-   [2] DATA SOURCE (PUBLIC)
+   [1] DOM
    ========================= */
-let LIB = [];          // aquí vive la lista cargada desde videos.json
+const $ = (id) => document.getElementById(id);
+
+const video = $('video');
+
+const titleEl = $('title');
+const videoLinkEl = $('videoLink');
+const audioLinkEl = $('audioLink');
+const libraryEl = $('library');
+
+const btnSave = $('btnSave');
+const btnLoad = $('btnLoad');
+const btnPlayEs = $('btnPlayEs');
+const btnPlayEn = $('btnPlayEn');
+const btnDelete = $('btnDelete');
+
+const adminPanel = $('adminPanel');
+const btnOpenAdmin = $('btnOpenAdmin');
+const btnCloseAdmin = $('btnCloseAdmin');
+
+const grid = $('grid');
+const empty = $('empty');
+const search = $('search');
+
+const modal = $('modal');
+const modalTitle = $('modalTitle');
+const modalSub = $('modalSub');
+const btnCloseModal = $('btnCloseModal');
+const btnModalEn = $('btnModalEn');
+const btnModalEs = $('btnModalEs');
+
+/* =========================
+   [2] DATA (videos.json)
+   ========================= */
+let LIB = [];
 let selectedIndex = null;
 
-async function loadLibraryFromJson(){
-  try{
-    const res = await fetch('./videos.json', { cache: "no-store" });
-    if(!res.ok) throw new Error("No se pudo leer videos.json");
+async function loadLibraryFromJson() {
+  try {
+    const res = await fetch('./videos.json', { cache: 'no-store' });
+    if (!res.ok) throw new Error('No se pudo leer videos.json');
     const data = await res.json();
     LIB = Array.isArray(data) ? data : [];
-  }catch(e){
+  } catch (e) {
     console.error(e);
     LIB = [];
   }
 }
 
 /* =========================
-   [3] RENDER: SELECT + GRID
+   [3] RENDER
    ========================= */
-function refreshSelect(){
-  libraryEl.innerHTML = "";
+function refreshSelect() {
+  libraryEl.innerHTML = '';
 
   if (LIB.length === 0) {
-    const opt = document.createElement("option");
-    opt.textContent = "— Sin videos —";
-    opt.value = "";
+    const opt = document.createElement('option');
+    opt.textContent = '— Sin videos —';
+    opt.value = '';
     libraryEl.appendChild(opt);
     selectedIndex = null;
     return;
   }
 
   LIB.forEach((it, idx) => {
-    const opt = document.createElement("option");
-    opt.value = idx;
-    opt.textContent = it.title || `Item ${idx+1}`;
+    const opt = document.createElement('option');
+    opt.value = String(idx);
+    opt.textContent = it.title || `Item ${idx + 1}`;
     libraryEl.appendChild(opt);
   });
 
@@ -79,74 +85,74 @@ function refreshSelect(){
   libraryEl.value = String(selectedIndex);
 }
 
-function fillInputsFromSelected(){
+function fillInputsFromSelected() {
   const idx = libraryEl.value;
-  if (idx === "" || !LIB[idx]) return;
+  if (idx === '' || !LIB[idx]) return;
 
   selectedIndex = Number(idx);
-  titleEl.value = LIB[idx].title || "";
-  videoLinkEl.value = LIB[idx].video || "";
-  audioLinkEl.value = LIB[idx].audio || "";
+  titleEl.value = LIB[idx].title || '';
+  videoLinkEl.value = LIB[idx].video || '';
+  audioLinkEl.value = LIB[idx].audio || '';
 }
 
-function renderGrid(){
-  const q = (search.value || "").trim().toLowerCase();
+function renderGrid() {
+  const q = (search.value || '').trim().toLowerCase();
 
   const filtered = LIB
-    .map((it, idx) => ({...it, idx}))
-    .filter(it => (it.title || "").toLowerCase().includes(q));
+    .map((it, idx) => ({ ...it, idx }))
+    .filter((it) => (it.title || '').toLowerCase().includes(q));
 
-  grid.innerHTML = "";
+  grid.innerHTML = '';
 
   if (filtered.length === 0) {
-    empty.classList.remove("hidden");
+    empty.classList.remove('hidden');
     return;
   }
-  empty.classList.add("hidden");
+  empty.classList.add('hidden');
 
-  filtered.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "card";
-    card.dataset.idx = item.idx;
+  filtered.forEach((item) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.idx = String(item.idx);
 
-    // Miniatura: si hay poster úsalo, si no, degradado
-    const thumb = document.createElement("div");
-    thumb.className = "thumb";
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+
     if (item.poster) {
       thumb.style.backgroundImage = `url('${item.poster}')`;
-      thumb.style.backgroundSize = "cover";
-      thumb.style.backgroundPosition = "center";
-      thumb.style.height = "160px";
+      thumb.style.backgroundSize = 'cover';
+      thumb.style.backgroundPosition = 'center';
+      thumb.style.height = '160px';
     }
 
-    const body = document.createElement("div");
-    body.className = "card-body";
+    const body = document.createElement('div');
+    body.className = 'card-body';
 
-    const title = document.createElement("p");
-    title.className = "card-title";
-    title.textContent = item.title || "Sin nombre";
+    const t = document.createElement('p');
+    t.className = 'card-title';
+    t.textContent = item.title || 'Sin nombre';
 
-    const badges = document.createElement("div");
-    badges.className = "badges";
+    const badges = document.createElement('div');
+    badges.className = 'badges';
 
-    const badgeVideo = document.createElement("span");
-    badgeVideo.className = "badge";
-    badgeVideo.textContent = (item.video || "").includes(".m3u8") ? "HLS" : "LINK";
+    const badgeVideo = document.createElement('span');
+    badgeVideo.className = 'badge';
+    badgeVideo.textContent = (item.video || '').includes('.m3u8') ? 'HLS' : 'LINK';
 
-    const badgeAudio = document.createElement("span");
-    badgeAudio.className = "badge";
-    badgeAudio.textContent = item.audio ? "ES ✓" : "ES —";
+    const badgeAudio = document.createElement('span');
+    badgeAudio.className = 'badge';
+    badgeAudio.textContent = item.audio ? 'ES ✓' : 'ES —';
 
     badges.appendChild(badgeVideo);
     badges.appendChild(badgeAudio);
 
-    body.appendChild(title);
+    body.appendChild(t);
     body.appendChild(badges);
 
     card.appendChild(thumb);
     card.appendChild(body);
 
-    card.addEventListener("click", () => {
+    card.addEventListener('click', () => {
       selectedIndex = item.idx;
       refreshSelect();
       fillInputsFromSelected();
@@ -160,22 +166,55 @@ function renderGrid(){
 /* =========================
    [4] PLAYER: HLS + AUDIO ES
    ========================= */
-let hlsVideo = null, hlsAudio = null, audioEs = null, syncTimer = null;
+let hlsVideo = null;
+let hlsAudio = null;
+let audioEs = null;
+let syncTimer = null;
 
-function cleanupAudio(){
-  if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
-  if (audioEs){ try{audioEs.pause()}catch{} audioEs.src=""; audioEs.load(); audioEs=null; }
-  if (hlsAudio){ try{hlsAudio.destroy()}catch{} hlsAudio=null; }
+// handlers (para poder removerlos y no duplicar)
+let onVideoPlay = null;
+let onVideoPause = null;
+let onVideoSeeking = null;
+
+function stopVideoHard() {
+  try { video.pause(); } catch {}
+  try {
+    if (hlsVideo) { hlsVideo.destroy(); hlsVideo = null; }
+  } catch {}
+  video.removeAttribute('src');
+  video.load();
 }
 
-function loadVideo(){
-  const src = (videoLinkEl.value || "").trim();
-  if (!src) return alert("Falta link del VIDEO.");
+function cleanupAudio() {
+  if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
 
-  if (hlsVideo){ try{hlsVideo.destroy()}catch{} hlsVideo=null; }
-  video.pause(); video.removeAttribute("src"); video.load();
+  // remover listeners previos si existían
+  if (onVideoPlay) video.removeEventListener('play', onVideoPlay);
+  if (onVideoPause) video.removeEventListener('pause', onVideoPause);
+  if (onVideoSeeking) video.removeEventListener('seeking', onVideoSeeking);
+  onVideoPlay = onVideoPause = onVideoSeeking = null;
 
-  if (window.Hls && Hls.isSupported()) {
+  if (audioEs) {
+    try { audioEs.pause(); } catch {}
+    audioEs.src = '';
+    try { audioEs.load(); } catch {}
+    audioEs = null;
+  }
+
+  if (hlsAudio) {
+    try { hlsAudio.destroy(); } catch {}
+    hlsAudio = null;
+  }
+}
+
+function loadVideo() {
+  const src = (videoLinkEl.value || '').trim();
+  if (!src) return alert('Falta link del VIDEO.');
+
+  // reset video
+  stopVideoHard();
+
+  if (window.Hls && Hls.isSupported() && src.includes('.m3u8')) {
     hlsVideo = new Hls({ enableWorker: true });
     hlsVideo.loadSource(src);
     hlsVideo.attachMedia(video);
@@ -184,16 +223,17 @@ function loadVideo(){
   }
 }
 
-function attachAudioEs(){
-  const asrc = (audioLinkEl.value || "").trim();
-  if (!asrc) return alert("Falta link del AUDIO español.");
+function attachAudioEs() {
+  const asrc = (audioLinkEl.value || '').trim();
+  if (!asrc) return alert('Falta link del AUDIO español.');
 
   cleanupAudio();
-  audioEs = new Audio();
-  audioEs.preload = "auto";
 
-  const isM3U8 = asrc.toLowerCase().includes(".m3u8");
-  if (isM3U8 && window.Hls && Hls.isSupported()){
+  audioEs = new Audio();
+  audioEs.preload = 'auto';
+
+  const isM3U8 = asrc.toLowerCase().includes('.m3u8');
+  if (isM3U8 && window.Hls && Hls.isSupported()) {
     hlsAudio = new Hls({ enableWorker: true });
     hlsAudio.loadSource(asrc);
     hlsAudio.attachMedia(audioEs);
@@ -201,19 +241,25 @@ function attachAudioEs(){
     audioEs.src = asrc;
   }
 
-  video.addEventListener('play', () => audioEs && audioEs.play().catch(()=>{}));
-  video.addEventListener('pause', () => audioEs && audioEs.pause());
-  video.addEventListener('seeking', () => { if(audioEs) audioEs.currentTime = video.currentTime; });
+  // crear handlers UNA vez (y guardarlos para remover luego)
+  onVideoPlay = () => audioEs && audioEs.play().catch(() => {});
+  onVideoPause = () => audioEs && audioEs.pause();
+  onVideoSeeking = () => { if (audioEs) audioEs.currentTime = video.currentTime; };
 
+  video.addEventListener('play', onVideoPlay);
+  video.addEventListener('pause', onVideoPause);
+  video.addEventListener('seeking', onVideoSeeking);
+
+  // re-sync suave
   syncTimer = setInterval(() => {
     if (!audioEs || video.paused) return;
-    const drift = Math.abs((audioEs.currentTime||0) - (video.currentTime||0));
+    const drift = Math.abs((audioEs.currentTime || 0) - (video.currentTime || 0));
     if (drift > 0.25) audioEs.currentTime = video.currentTime;
   }, 1000);
 }
 
-async function playSpanish(){
-  if (!hlsVideo && !video.src) loadVideo();
+async function playSpanish() {
+  if (!video.src && !hlsVideo) loadVideo();
   attachAudioEs();
   video.muted = true;
 
@@ -221,64 +267,79 @@ async function playSpanish(){
   try {
     audioEs.currentTime = video.currentTime;
     await audioEs.play();
-    modalSub.textContent = "Audio: Español (externo)";
+    modalSub.textContent = 'Audio: Español (externo)';
   } catch {
-    alert("Audio bloqueado: haz clic otra vez en Español.");
+    alert('Audio bloqueado: haz clic otra vez en Español.');
   }
 }
 
-async function playEnglish(){
+async function playEnglish() {
   cleanupAudio();
   video.muted = false;
-  if (!hlsVideo && !video.src) loadVideo();
+  if (!video.src && !hlsVideo) loadVideo();
   try { await video.play(); } catch {}
-  modalSub.textContent = "Audio: Inglés (original)";
+  modalSub.textContent = 'Audio: Inglés (original)';
 }
 
 /* =========================
-   [MODAL CONTROL]
+   [5] MODAL
    ========================= */
-function openModal(){
-  modal.classList.remove("hidden");
-  modalTitle.textContent = titleEl.value || "Reproduciendo...";
-  modalSub.textContent = "Audio: Inglés (original)";
+function openModal() {
+  modal.classList.remove('hidden');
+  modalTitle.textContent = titleEl.value || 'Reproduciendo...';
+  modalSub.textContent = 'Audio: Inglés (original)';
 }
-function closeModal(){
-  modal.classList.add("hidden");
+
+function closeModal() {
+  // cerrar UI
+  modal.classList.add('hidden');
+
+  // detener todo para que NO siga sonando ni se quede pegado
+  cleanupAudio();
+  stopVideoHard();
 }
-function openModalAndPlayEnglish(){
+
+function openModalAndPlayEnglish() {
   openModal();
   loadVideo();
   playEnglish();
 }
 
 /* =========================
-   [5] UI EVENTS
+   [6] EVENTS
    ========================= */
-btnOpenAdmin.addEventListener("click", () => adminPanel.classList.remove("hidden"));
-btnCloseAdmin.addEventListener("click", () => adminPanel.classList.add("hidden"));
+btnOpenAdmin.addEventListener('click', () => adminPanel.classList.remove('hidden'));
+btnCloseAdmin.addEventListener('click', () => adminPanel.classList.add('hidden'));
 
-btnCloseModal.addEventListener("click", closeModal);
-modal.addEventListener("click", (e) => { if (e.target === modal) closeModal(); });
+btnCloseModal.addEventListener('click', closeModal);
+modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
 
-btnModalEn.addEventListener("click", playEnglish);
-btnModalEs.addEventListener("click", playSpanish);
+btnModalEn.addEventListener('click', playEnglish);
+btnModalEs.addEventListener('click', playSpanish);
 
 btnLoad.onclick = () => { loadVideo(); openModal(); };
 btnPlayEs.onclick = () => { openModal(); playSpanish(); };
 btnPlayEn.onclick = () => { openModal(); playEnglish(); };
 
-/* ===== ADMIN (sin backend) =====
-   En GitHub Pages no se puede escribir videos.json desde el navegador.
-   Por eso: tú editas videos.json manualmente y haces git push.
-*/
-btnSave.onclick = () => alert("Para agregar videos: edita videos.json y haz git push (GitHub Pages es estático).");
-btnDelete.onclick = () => alert("Para eliminar videos: borra el item en videos.json y haz git push.");
+// Admin sin backend
+btnSave.onclick = () => alert('Para agregar: edita videos.json y haz git push (GitHub Pages es estático).');
+btnDelete.onclick = () => alert('Para eliminar: borra el item en videos.json y haz git push.');
+
+libraryEl.addEventListener('change', () => {
+  fillInputsFromSelected();
+});
+
+search.addEventListener('input', renderGrid);
+
+// tecla ESC cierra modal
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
+});
 
 /* =========================
    [INIT]
    ========================= */
-(async function init(){
+(async function init() {
   await loadLibraryFromJson();
   refreshSelect();
   fillInputsFromSelected();
